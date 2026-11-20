@@ -8,7 +8,8 @@
 #include "wire.h"
 
 constexpr u32 RoMaxNrr = 8;
-constexpr u32 RoMaxNro = 8;
+// A program and its shared libraries are one NRO each.
+constexpr u32 RoMaxNro = 64;
 constexpr u32 RoMaxJit = 512;
 
 /// What RO has mapped for a loaded image, in RoLoadedImage::mapped.

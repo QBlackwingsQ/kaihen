@@ -14,6 +14,9 @@ extern "C" {
 static Handle g_closed[8];
 static u32 g_closeCount;
 static u32 g_mapCount, g_unmapCount;
+// roUnmapImage fails with this result for the image at this address.
+static Result g_unmapResult;
+static u64 g_unmapFailureBase;
 static Result g_mapResult;
 static u32 g_jitMapCount, g_jitUnmapCount;
 static u32 g_aliasMapCount, g_aliasUnmapCount, g_aliasFlushCount;
@@ -108,19 +111,22 @@ static void jitRequest(u32* words, u32 command, u64 destination, u64 source, u64
 Result roMapImage(Handle process, const RoImageRequest& request, RoLoadedImage* record,
                   const RoLoadedImage* existing, u32 existing_count, u64* base) {
     assert(process == 42 && request.source == 0x12345000 && request.size == 0x3000);
-    assert(existing_count == RoMaxNro && existing == record);
+    assert(existing_count == RoMaxNro && record >= existing && record < existing + RoMaxNro);
     g_mapCount++;
     if (g_mapResult)
         return g_mapResult;
-    *base = 0x45678000;
+    // Each record gets an address of its own.
+    *base = 0x45678000 + static_cast<u64>(record - existing) * 0x10000;
     record->base = *base;
     record->mapped = RoImageState_Ready | RoImageState_CodeMapped;
     return 0;
 }
 
 Result roUnmapImage(Handle process, RoLoadedImage* record) {
-    assert(process == 42 && record->base == 0x45678000);
+    assert(process == 42 && record->base >= 0x45678000 && (record->base & 0xffff) == 0x8000);
     g_unmapCount++;
+    if (g_unmapResult && record->base == g_unmapFailureBase)
+        return g_unmapResult;
     record->mapped = 0;
     record->base = 0;
     return 0;
@@ -179,6 +185,50 @@ int main(void) {
     roDispatch(sessions, 2, 0, words);
     assert(words[6] == RoResult_InvalidNro && words[1] == 8 && words[8] == 0);
     assert(g_mapCount == 2 && sessions[0].nro[0].mapped == 0);
+    g_mapResult = 0;
+
+    // The loader releases a program and its libraries in one request. An
+    // image that cannot be unmapped stays recorded, and the rest are removed.
+    for (u32 i = 0; i < 3; i++) {
+        request(words, RoCmd_LoadNro, 18, 1, 0);
+        words[14] = 0x12345000;
+        words[16] = 0x3000;
+        roDispatch(sessions, 2, 0, words);
+        assert(words[6] == 0 && words[8] == 0x45678000 + i * 0x10000ULL);
+    }
+    g_unmapResult = RoResult_InvalidAddress;
+    g_unmapFailureBase = 0x45688000;
+    const u32 unmaps_before_release = g_unmapCount;
+    request(words, RoCmd_ReleaseNros, 10, 1, 0);
+    roDispatch(sessions, 2, 0, words);
+    assert(words[6] == RoResult_InvalidAddress && g_unmapCount == unmaps_before_release + 3);
+    assert(sessions[0].nro[0].mapped == 0 && sessions[0].nro[1].mapped != 0 &&
+           sessions[0].nro[2].mapped == 0);
+    g_unmapResult = 0;
+    request(words, RoCmd_ReleaseNros, 10, 1, 0);
+    roDispatch(sessions, 2, 0, words);
+    assert(words[6] == 0 && words[8] == 1 && sessions[0].nro[1].mapped == 0);
+    request(words, RoCmd_ReleaseNros, 10, 1, 0);
+    roDispatch(sessions, 2, 0, words);
+    assert(words[6] == 0 && words[8] == 0 && g_unmapCount == unmaps_before_release + 4);
+
+    // All image slots can be used; the next load fails without mapping.
+    const u32 maps_before_capacity = g_mapCount;
+    for (u32 i = 0; i < RoMaxNro; i++) {
+        request(words, RoCmd_LoadNro, 18, 1, 0);
+        words[14] = 0x12345000;
+        words[16] = 0x3000;
+        roDispatch(sessions, 2, 0, words);
+        assert(words[6] == 0);
+    }
+    request(words, RoCmd_LoadNro, 18, 1, 0);
+    words[14] = 0x12345000;
+    words[16] = 0x3000;
+    roDispatch(sessions, 2, 0, words);
+    assert(words[6] == RoResult_TooManyNro && g_mapCount == maps_before_capacity + RoMaxNro);
+    request(words, RoCmd_ReleaseNros, 10, 1, 0);
+    roDispatch(sessions, 2, 0, words);
+    assert(words[6] == 0 && words[8] == RoMaxNro);
 
     // An unaligned range is rejected before any system call.
     jitRequest(words, RoCmd_MapJitCode, 0x56789000, 0x12345800, 0x2000);

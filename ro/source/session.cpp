@@ -146,6 +146,26 @@ Result unloadNro(RoSession* s, u64 base) {
     return RoResult_NotLoaded;
 }
 
+/// Unloads all NROs of the context, and what a failed load left mapped. An
+/// image that cannot be unmapped stays recorded; the reply value counts the
+/// images removed, and the result is the last failure.
+Result releaseNros(RoSession* s, CommandReply* reply) {
+    Result last_failure = 0;
+    u64 count = 0;
+    for (RoLoadedImage& image : s->nro) {
+        if (!image.mapped)
+            continue;
+        const Result rc = roUnmapImage(s->process_handle, &image);
+        if (R_SUCCEEDED(rc))
+            count++;
+        else
+            last_failure = rc;
+    }
+    reply->value = count;
+    reply->has_value = true;
+    return last_failure;
+}
+
 //-----------------------------------------------------------------------------
 // JIT code
 //-----------------------------------------------------------------------------
@@ -356,6 +376,8 @@ Result runClientCommand(RoSession* s, const RoRequest& request, CommandReply* re
         return publishJitAlias(s, args[0], args[1], args[2], request);
     case RoCmd_PublishJitRanges:
         return publishJitRanges(s, args[0], args[1], request);
+    case RoCmd_ReleaseNros:
+        return releaseNros(s, reply);
     default:
         return RoResult_BadRequest;
     }

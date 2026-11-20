@@ -45,6 +45,10 @@ typedef enum {
     /// Publishes several ranges in one request. Input: destination and range
     /// count; send buffers contain KaihenJitRange[] and concatenated bytes.
     KaihenRoCommand_PublishJitRanges = 65015,
+    /// Unloads all NROs of the session: the program and the shared libraries
+    /// that the loader or the program loaded for it. hbloader sends it when
+    /// a program returns. The reply value is the number of NROs unloaded.
+    KaihenRoCommand_ReleaseNros = 65016,
 } KaihenRoCommand;
 
 /// A byte range within a JIT mapping. Payload bytes follow range order.
