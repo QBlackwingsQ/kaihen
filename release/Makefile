@@ -22,11 +22,15 @@ STAGE := $(DEPS)/zip
 LICENSES := $(STAGE)/licenses
 # The shared libraries that hbloader looks for in sdmc:/kaihen/lib when a
 # dynamically linked program does not bring its own: libounce's runtime
-# library and libstdc++ from libounce's package, and the Vulkan driver from
-# OunceVK's. They are the packages' NROs, as the devkit's image has them.
+# library and libstdc++ from libounce's package, and from OunceVK's the
+# Vulkan driver, the GL library, and the libraries with the names that code
+# written for Linux loads with dlopen. They are the packages' NROs, as the
+# devkit's image has them.
+OUNCEVK_SHARED := libouncevk.so.1 libouncevk-gl.so.1 libvulkan.so.1 \
+	libEGL.so.1 libGLESv2.so.2 libGL.so.1
 SHARED_LIBRARIES := $(DEVKITPRO)/libounce/lib/shared/nro/libounce.so.1 \
 	$(DEVKITPRO)/libounce/lib/shared/nro/libstdc++.so.6 \
-	$(DEVKITPRO)/portlibs/switch2/lib/shared/nro/libouncevk.so.1
+	$(addprefix $(DEVKITPRO)/portlibs/switch2/lib/shared/nro/,$(OUNCEVK_SHARED))
 # devkitPro's Switch portlibs that hbmenu and OunceShell link, that
 # ship a license file.
 PORTLIB_LICENSES := $(DEVKITPRO)/portlibs/switch/licenses

@@ -39,7 +39,7 @@ kaiHEN-$version.zip layout:
 - \`ro/main\`, \`hen/main\`
 - \`game/main\`: nx-hbloader
 - \`programs/ounceshell.nro\`: OunceShell
-- \`kaihen/lib/\`: \`libounce.so.1\`, \`libstdc++.so.6\` and \`libouncevk.so.1\`, the shared libraries of dynamically linked programs. Copy the \`kaihen\` folder to the SD card's root: nx-hbloader looks for a program's libraries in the program's folder and then in \`sdmc:/kaihen/lib\`.
+- \`kaihen/lib/\`: the shared libraries of dynamically linked programs: \`libounce.so.1\`, \`libstdc++.so.6\`, Vulkan (\`libouncevk.so.1\`), OpenGL (\`libouncevk-gl.so.1\`), and \`libvulkan.so.1\`, \`libEGL.so.1\`, \`libGLESv2.so.2\` and \`libGL.so.1\` for programs that load those names. Copy the \`kaihen\` folder to the SD card's root: nx-hbloader looks for a program's libraries in the program's folder and then in \`sdmc:/kaihen/lib\`.
 - \`licenses/\`: the licenses of everything above
 
 Built with \`docker build --build-arg RELEASE=1 --output out .\` at this tag, in ounce-devkit's image with $devkit from the [ounce] repository.
