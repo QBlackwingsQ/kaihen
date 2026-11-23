@@ -33,9 +33,6 @@ constexpr u64 SearchAlignments[] = {0x200000, 0x10000, 0x1000};
 /// RoResult_OutOfAddressSpace.
 constexpr u32 MaxMapAttempts = 64;
 
-/// The number of memory blocks that one address search queries.
-constexpr u32 MaxSearchBlocks = 256;
-
 /// The regions that the address search skips, as svcGetInfo types of their
 /// address and size. The last two are queried by stock RO; what they hold is
 /// not identified.
@@ -170,6 +167,10 @@ bool findInFreeBlock(const AddressSpace& space, const MemoryInfo& block, u64 at,
  *        @p after, with @p guard free bytes on each side, outside the
  *        reserved regions, and with the same offset as @p source within
  *        @p alignment.
+ *
+ * The search queries each block from the start to the end of the address
+ * space, however many the process has: a client with many images mapped has
+ * several blocks for each one.
  * @return The address, or 0 when none was found.
  */
 u64 findFreeAddress(Handle process, u64 size, u64 source, u64 alignment, u64 guard, u64 after) {
@@ -181,7 +182,7 @@ u64 findFreeAddress(Handle process, u64 size, u64 source, u64 alignment, u64 gua
     if (!at)
         at = PageSize;
 
-    for (u32 blocks = 0; blocks < MaxSearchBlocks && at < space.end; blocks++) {
+    while (at < space.end) {
         MemoryInfo block = {};
         if (R_FAILED(queryMemory(process, at, &block)) || !block.size ||
             block.addr > UINT64_MAX - block.size || block.addr + block.size <= at)
