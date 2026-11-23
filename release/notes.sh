@@ -33,6 +33,13 @@ cat <<NOTES
 
 **Known issue:** files whose names have non-ASCII characters (accents, Japanese, emoji) do not show in folder listings, in OunceShell or over FTP. They can still be opened, downloaded and deleted by name.
 
+**If a program does not start,** the menu shows a number for the reason:
+
+- \`2346-0200\`: the program needs shared libraries and this kaiHEN is older than they are. Update kaiHEN.
+- \`2346-0201\`: a shared library that the program needs is not on the SD card. Copy the \`kaihen\` folder of this zip to the SD card's root.
+- \`2346-0202\`, \`2346-0203\`, \`2346-0204\`: a shared library on the SD card does not fit the program: it is older or newer than the one the program was built with. Update the \`kaihen\` folder, or the program.
+- \`2346-0205\`: a library in \`sdmc:/kaihen/preload\` could not be loaded. Remove it.
+
 kaiHEN-$version.zip layout:
 
 - \`bootstrap.bin\`, \`hbmenu.nro\`
