@@ -9,7 +9,7 @@ FROM docker.io/devkitpro/devkita64:20260219 AS build
 
 ARG VERSION
 # The libounce release that libkaihen builds against.
-ARG LIBOUNCE_VERSION=20261117
+ARG LIBOUNCE_VERSION=20261123
 # The commit time, so that the package's file times do not depend on the
 # build.
 ARG SOURCE_DATE_EPOCH=0
