@@ -6,6 +6,7 @@ extern "C" {
 #include <switch/kernel/virtmem.h>
 #include <switch/arm/cache.h>
 }
+#include <cstdlib>
 #include <cstring>
 #include "switch/sf/hipc.h"
 #include "switch/sf/cmif.h"
@@ -126,20 +127,40 @@ Result unloadNrr(RoSession* s, u64 source) {
     return RoResult_NotRegistered;
 }
 
+/// Finds a free NRO record of the context. When all are in use, the array
+/// grows to twice its size. Returns nullptr when RO has no memory for that.
+RoLoadedImage* acquireNroRecord(RoSession* s) {
+    for (u32 i = 0; i < s->nro_capacity; i++) {
+        if (!s->nro[i].mapped)
+            return &s->nro[i];
+    }
+
+    constexpr u32 InitialCapacity = 8;
+    const u32 capacity = s->nro_capacity ? s->nro_capacity * 2 : InitialCapacity;
+    auto* grown = static_cast<RoLoadedImage*>(std::realloc(s->nro, capacity * sizeof(RoLoadedImage)));
+    if (!grown)
+        return nullptr;
+    std::memset(grown + s->nro_capacity, 0, (capacity - s->nro_capacity) * sizeof(RoLoadedImage));
+
+    RoLoadedImage* record = grown + s->nro_capacity;
+    s->nro = grown;
+    s->nro_capacity = capacity;
+    return record;
+}
+
 Result loadNro(RoSession* s, const RoRequest& request, CommandReply* reply) {
     const RoImageRequest image = {request.args[0], request.args[1], request.args[2], request.args[3]};
-    for (u32 i = 0; i < RoMaxNro; i++) {
-        if (s->nro[i].mapped)
-            continue;
-        const Result rc = roMapImage(s->process_handle, image, &s->nro[i], s->nro, RoMaxNro, &reply->value);
-        reply->has_value = true;
-        return rc;
-    }
-    return RoResult_TooManyNro;
+    RoLoadedImage* record = acquireNroRecord(s);
+    if (!record)
+        return RoResult_TooManyNro;
+
+    const Result rc = roMapImage(s->process_handle, image, record, s->nro, s->nro_capacity, &reply->value);
+    reply->has_value = true;
+    return rc;
 }
 
 Result unloadNro(RoSession* s, u64 base) {
-    for (u32 i = 0; i < RoMaxNro; i++) {
+    for (u32 i = 0; i < s->nro_capacity; i++) {
         if ((s->nro[i].mapped & RoImageState_Ready) && s->nro[i].base == base)
             return roUnmapImage(s->process_handle, &s->nro[i]);
     }
@@ -152,7 +173,8 @@ Result unloadNro(RoSession* s, u64 base) {
 Result releaseNros(RoSession* s, CommandReply* reply) {
     Result last_failure = 0;
     u64 count = 0;
-    for (RoLoadedImage& image : s->nro) {
+    for (u32 i = 0; i < s->nro_capacity; i++) {
+        RoLoadedImage& image = s->nro[i];
         if (!image.mapped)
             continue;
         const Result rc = roUnmapImage(s->process_handle, &image);
@@ -442,7 +464,8 @@ Result roSessionClose(RoSession* s) {
             last_failure = rc;
         entry.alias = nullptr;
     }
-    for (RoLoadedImage& image : s->nro) {
+    for (u32 i = 0; i < s->nro_capacity; i++) {
+        RoLoadedImage& image = s->nro[i];
         if (image.mapped && !(image.mapped & RoImageState_Ready)) {
             const Result rc = roUnmapImage(s->process_handle, &image);
             if (R_FAILED(rc))
@@ -465,10 +488,9 @@ Result roSessionClose(RoSession* s) {
         s->nrr_source[i] = 0;
         s->nrr_size[i] = 0;
     }
-    for (RoLoadedImage& image : s->nro) {
-        image.base = 0;
-        image.mapped = 0;
-    }
+    std::free(s->nro);
+    s->nro = nullptr;
+    s->nro_capacity = 0;
     for (RoJitMapping& entry : s->jit)
         entry = RoJitMapping{};
     return last_failure;
