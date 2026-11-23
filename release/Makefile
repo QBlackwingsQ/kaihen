@@ -4,6 +4,8 @@
 #   bootstrap.bin, hbmenu.nro, ro/main, hen/main,
 #   game/main                    nx-hbloader
 #   programs/ounceshell.nro      OunceShell, the VitaShell port
+#   kaihen/lib/                  the shared libraries of dynamically linked
+#                                programs, for sdmc:/kaihen/lib
 #   licenses/                    the licenses of everything above
 #
 # The Dockerfile runs this with RELEASE=1 and sets the sources and commits:
@@ -18,6 +20,13 @@ HBMENU := $(DEPS)/nx-hbmenu
 OUNCESHELL := $(DEPS)/ounceshell
 STAGE := $(DEPS)/zip
 LICENSES := $(STAGE)/licenses
+# The shared libraries that hbloader looks for in sdmc:/kaihen/lib when a
+# dynamically linked program does not bring its own: libounce's runtime
+# library and libstdc++ from libounce's package, and the Vulkan driver from
+# OunceVK's. They are the packages' NROs, as the devkit's image has them.
+SHARED_LIBRARIES := $(DEVKITPRO)/libounce/lib/shared/nro/libounce.so.1 \
+	$(DEVKITPRO)/libounce/lib/shared/nro/libstdc++.so.6 \
+	$(DEVKITPRO)/portlibs/switch2/lib/shared/nro/libouncevk.so.1
 # devkitPro's Switch portlibs that hbmenu and OunceShell link, that
 # ship a license file.
 PORTLIB_LICENSES := $(DEVKITPRO)/portlibs/switch/licenses
@@ -36,7 +45,9 @@ endef
 # Copies the licenses of kaiHEN, the programs, and the libraries linked into
 # them. The portlibs without a license file (physfs, harfbuzz, SDL 2, libwebp,
 # expat, lz4, liblzma, libvorbis, libogg, Oniguruma) have theirs in
-# release/licenses, from upstream at the installed versions.
+# release/licenses, from upstream at the installed versions. libstdc++.so.6
+# is GCC's library as a file of its own: its license and the GCC Runtime
+# Library Exception are there too.
 define copy_licenses
 	mkdir -p $(LICENSES)
 	cp LICENSE $(LICENSES)/kaiHEN-GPL-2.0.txt
@@ -83,6 +94,8 @@ $(RELEASE_ZIP): kaihen $(HBLOADER)/build/clean/main \
 	cp hen/build/main $(STAGE)/hen/main
 	cp $(HBLOADER)/build/clean/main $(STAGE)/game/main
 	cp $(OUNCESHELL)/build/switch2/ounceshell.nro $(STAGE)/programs/
+	mkdir -p $(STAGE)/kaihen/lib
+	cp $(SHARED_LIBRARIES) $(STAGE)/kaihen/lib/
 	$(copy_licenses)
 	mkdir -p $(dir $(abspath $@))
 	rm -f $@

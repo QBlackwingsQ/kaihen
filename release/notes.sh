@@ -39,6 +39,7 @@ kaiHEN-$version.zip layout:
 - \`ro/main\`, \`hen/main\`
 - \`game/main\`: nx-hbloader
 - \`programs/ounceshell.nro\`: OunceShell
+- \`kaihen/lib/\`: \`libounce.so.1\`, \`libstdc++.so.6\` and \`libouncevk.so.1\`, the shared libraries of dynamically linked programs. Copy the \`kaihen\` folder to the SD card's root: nx-hbloader looks for a program's libraries in the program's folder and then in \`sdmc:/kaihen/lib\`.
 - \`licenses/\`: the licenses of everything above
 
 Built with \`docker build --build-arg RELEASE=1 --output out .\` at this tag, in ounce-devkit's image with $devkit from the [ounce] repository.
@@ -51,6 +52,7 @@ Built with \`docker build --build-arg RELEASE=1 --output out .\` at this tag, in
 - nx-hbloader: [ouncebrew/ounce-hbloader](https://github.com/ouncebrew/ounce-hbloader) at \`$(pin HBLOADER_COMMIT)\`.
 - nx-hbmenu: [ouncebrew/ounce-hbmenu](https://github.com/ouncebrew/ounce-hbmenu) at \`$(pin HBMENU_COMMIT)\`.
 - OunceShell (GPL-3.0-or-later): [kurumuz/ounceshell](https://github.com/kurumuz/ounceshell) at \`$(pin OUNCESHELL_COMMIT)\`, built with its \`switch2/Makefile\`. Its FTP server is [mtheall/ftpd](https://github.com/mtheall/ftpd) v2.3.1 (public domain), modified.
+- \`libstdc++.so.6\` (GPL-3.0-or-later with the GCC Runtime Library Exception): GCC's C++ library as devkitA64 builds it, linked as a shared library by libounce's package. Its source is devkitPro's [buildscripts](https://github.com/devkitPro/buildscripts) for the devkitA64 release of the build image.
 - $devkit: the packages of [ouncebrew/libounce](https://github.com/ouncebrew/libounce), [ouncebrew/ouncevk](https://github.com/ouncebrew/ouncevk) and this repository's releases of those versions.
 - The devkitPro portlibs linked into hbmenu and OunceShell, from devkitPro's packages: libconfig 1.7.2, freetype 2.13.3, harfbuzz 10.0.1, libjpeg-turbo 2.1.2, libpng 1.6.48, bzip2 1.0.8, zlib 1.3.1, physfs 3.2.0, SDL2 2.28.5, SDL2_ttf 2.22.0, SDL2_image 2.0.4, libwebp 1.0.2, libarchive 3.7.2, expat 2.2.5, lz4 1.9.3, zstd 1.5.7, liblzma 5.8.2, libvorbis 1.3.7, libogg 1.3.4, Oniguruma 6.9.2.
 

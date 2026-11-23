@@ -67,8 +67,10 @@ docker build --build-arg RELEASE=1 --output out .
 writes the release, `out/kaiHEN.zip`: these binaries with nx-hbloader
 (`game/main`), nx-hbmenu (`hbmenu.nro`) and OunceShell
 (`programs/ounceshell.nro`, a file manager with an FTP server),
-built at the commits that the Dockerfile names, and the licenses of
-everything in it (`licenses/`).
+built at the commits that the Dockerfile names, the shared libraries of
+dynamically linked programs from the devkit's packages (`kaihen/lib/`,
+for `sdmc:/kaihen/lib`), and the licenses of everything in it
+(`licenses/`).
 
 The host tests, `sh hen/test.sh` and `sh ro/test.sh`,
 build with the host compiler and read libounce's headers from
