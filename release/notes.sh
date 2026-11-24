@@ -36,17 +36,18 @@ cat <<NOTES
 **If a program does not start,** the menu shows a number for the reason:
 
 - \`2346-0200\`: the program needs shared libraries and this kaiHEN is older than they are. Update kaiHEN.
-- \`2346-0201\`: a shared library that the program needs is not on the SD card. Copy the \`kaihen\` folder of this zip to the SD card's root.
-- \`2346-0202\`, \`2346-0203\`, \`2346-0204\`: a shared library on the SD card does not fit the program: it is older or newer than the one the program was built with. Update the \`kaihen\` folder, or the program.
+- \`2346-0201\`: a shared library that the program needs is not on the SD card. Copy \`sdcard/\` of this zip to the SD card's root.
+- \`2346-0202\`, \`2346-0203\`, \`2346-0204\`: a shared library on the SD card does not fit the program: it is older or newer than the one the program was built with. Copy \`sdcard/\` of this zip again, or update the program.
 - \`2346-0205\`: a library in \`sdmc:/kaihen/preload\` could not be loaded. Remove it.
 
 kaiHEN-$version.zip layout:
 
-- \`bootstrap.bin\`, \`hbmenu.nro\`
-- \`ro/main\`, \`hen/main\`
-- \`game/main\`: nx-hbloader
-- \`programs/ounceshell.nro\`: OunceShell
-- \`kaihen/lib/\`: the shared libraries of dynamically linked programs: \`libounce.so.1\`, \`libstdc++.so.6\`, Vulkan (\`libouncevk.so.1\`), OpenGL (\`libouncevk-gl.so.1\`), and \`libvulkan.so.1\`, \`libEGL.so.1\`, \`libGLESv2.so.2\` and \`libGL.so.1\` for programs that load those names. Copy the \`kaihen\` folder to the SD card's root: nx-hbloader looks for a program's libraries in the program's folder and then in \`sdmc:/kaihen/lib\`.
+- \`sdcard/\`: copy its contents to the SD card's root. The acquisition tool copies this folder for you.
+  - \`hbmenu.nro\`
+  - \`kaihen/bin/hen/main\` (kaiHEN) and \`kaihen/bin/game/main\` (nx-hbloader)
+  - \`kaihen/lib/\`: the shared libraries of dynamically linked programs: \`libounce.so.1\`, \`libstdc++.so.6\`, Vulkan (\`libouncevk.so.1\`), OpenGL (\`libouncevk-gl.so.1\`), and \`libvulkan.so.1\`, \`libEGL.so.1\`, \`libGLESv2.so.2\` and \`libGL.so.1\` for programs that load those names. nx-hbloader looks for a program's libraries in the program's folder and then in \`sdmc:/kaihen/lib\`.
+  - \`switch/ounceshell.nro\`: OunceShell
+- \`ro/main\`, \`bootstrap.bin\`: the acquisition tool reads these itself; they do not go on the SD card.
 - \`licenses/\`: the licenses of everything above
 
 Built with \`docker build --build-arg RELEASE=1 --output out .\` at this tag, in ounce-devkit's image with $devkit from the [ounce] repository.

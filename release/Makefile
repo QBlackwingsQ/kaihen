@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: ISC
 #
 # Builds the kaiHEN release zip:
-#   bootstrap.bin, hbmenu.nro, ro/main, hen/main,
-#   game/main                    nx-hbloader
-#   programs/ounceshell.nro      OunceShell, the VitaShell port
-#   kaihen/lib/                  the shared libraries of dynamically linked
-#                                programs, for sdmc:/kaihen/lib
+#   sdcard/                      copied to the SD card as it is:
+#     hbmenu.nro
+#     kaihen/bin/hen/main        kaiHEN
+#     kaihen/bin/game/main       nx-hbloader
+#     kaihen/lib/                the shared libraries of dynamically linked
+#                                programs
+#     switch/ounceshell.nro      OunceShell, the VitaShell port
+#   ro/main, bootstrap.bin       the host reads these during acquisition
 #   licenses/                    the licenses of everything above
 #
 # The Dockerfile runs this with RELEASE=1 and sets the sources and commits:
@@ -88,18 +91,22 @@ $(OUNCESHELL)/build/switch2/ounceshell.nro:
 	$(call checkout,$(OUNCESHELL),$(OUNCESHELL_URL),$(OUNCESHELL_COMMIT))
 	$(MAKE) -C $(OUNCESHELL) -f switch2/Makefile
 
+# The zip has three parts:
+#   sdcard/        goes to the SD card as it is: the host copies it whole.
+#   ro/main, bootstrap.bin   the host reads these itself during acquisition.
+#   licenses/      the licenses of everything in the zip.
 $(RELEASE_ZIP): kaihen $(HBLOADER)/build/clean/main \
         $(HBMENU)/build/nro/nro/hbmenu.nro $(OUNCESHELL)/build/switch2/ounceshell.nro
 	rm -rf $(STAGE)
-	mkdir -p $(STAGE)/ro $(STAGE)/hen $(STAGE)/game $(STAGE)/programs
+	mkdir -p $(STAGE)/ro $(STAGE)/sdcard/kaihen/bin/hen $(STAGE)/sdcard/kaihen/bin/game \
+		$(STAGE)/sdcard/kaihen/lib $(STAGE)/sdcard/switch
 	cp bootstrap/build/bootstrap.bin $(STAGE)/bootstrap.bin
-	cp $(HBMENU)/build/nro/nro/hbmenu.nro $(STAGE)/hbmenu.nro
 	cp ro/build/main $(STAGE)/ro/main
-	cp hen/build/main $(STAGE)/hen/main
-	cp $(HBLOADER)/build/clean/main $(STAGE)/game/main
-	cp $(OUNCESHELL)/build/switch2/ounceshell.nro $(STAGE)/programs/
-	mkdir -p $(STAGE)/kaihen/lib
-	cp $(SHARED_LIBRARIES) $(STAGE)/kaihen/lib/
+	cp $(HBMENU)/build/nro/nro/hbmenu.nro $(STAGE)/sdcard/hbmenu.nro
+	cp hen/build/main $(STAGE)/sdcard/kaihen/bin/hen/main
+	cp $(HBLOADER)/build/clean/main $(STAGE)/sdcard/kaihen/bin/game/main
+	cp $(SHARED_LIBRARIES) $(STAGE)/sdcard/kaihen/lib/
+	cp $(OUNCESHELL)/build/switch2/ounceshell.nro $(STAGE)/sdcard/switch/
 	$(copy_licenses)
 	mkdir -p $(dir $(abspath $@))
 	rm -f $@

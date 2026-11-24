@@ -64,13 +64,15 @@ writes `out/ro/main`, `out/hen/main`, `out/bootstrap.bin` and
 docker build --build-arg RELEASE=1 --output out .
 ```
 
-writes the release, `out/kaiHEN.zip`: these binaries with nx-hbloader
-(`game/main`), nx-hbmenu (`hbmenu.nro`) and OunceShell
-(`programs/ounceshell.nro`, a file manager with an FTP server),
-built at the commits that the Dockerfile names, the shared libraries of
-dynamically linked programs from the devkit's packages (`kaihen/lib/`,
-for `sdmc:/kaihen/lib`), and the licenses of everything in it
-(`licenses/`).
+writes the release, `out/kaiHEN.zip`. Its `sdcard/` folder is the SD card:
+nx-hbmenu (`sdcard/hbmenu.nro`), kaiHEN and nx-hbloader
+(`sdcard/kaihen/bin/hen/main`, `sdcard/kaihen/bin/game/main`), OunceShell
+(`sdcard/switch/ounceshell.nro`, a file manager with an FTP server), and the
+shared libraries of dynamically linked programs from the devkit's packages
+(`sdcard/kaihen/lib/`), all built at the commits that the Dockerfile names.
+`ro/main` and `bootstrap.bin` are read by the acquisition tool during
+startup and do not go on the SD card. `licenses/` has the licenses of
+everything in the zip.
 
 The host tests, `sh hen/test.sh` and `sh ro/test.sh`,
 build with the host compiler and read libounce's headers from
