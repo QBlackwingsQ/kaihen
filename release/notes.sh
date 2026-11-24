@@ -33,12 +33,21 @@ cat <<NOTES
 
 **Known issue:** files whose names have non-ASCII characters (accents, Japanese, emoji) do not show in folder listings, in OunceShell or over FTP. They can still be opened, downloaded and deleted by name.
 
+**If a program does not start,** the menu shows a number for the reason:
+
+- \`2346-0200\`: the program needs shared libraries and this kaiHEN is older than they are. Update kaiHEN.
+- \`2346-0201\`: a shared library that the program needs is not on the SD card. Copy \`sdcard/\` of this zip to the SD card's root.
+- \`2346-0202\`, \`2346-0203\`, \`2346-0204\`: a shared library on the SD card does not fit the program: it is older or newer than the one the program was built with. Copy \`sdcard/\` of this zip again, or update the program.
+- \`2346-0205\`: a library in \`sdmc:/kaihen/preload\` could not be loaded. Remove it.
+
 kaiHEN-$version.zip layout:
 
-- \`bootstrap.bin\`, \`hbmenu.nro\`
-- \`ro/main\`, \`hen/main\`
-- \`game/main\`: nx-hbloader
-- \`programs/ounceshell.nro\`: OunceShell
+- \`sdcard/\`: copy its contents to the SD card's root. The acquisition tool copies this folder for you.
+  - \`hbmenu.nro\`
+  - \`kaihen/bin/hen/main\` (kaiHEN) and \`kaihen/bin/game/main\` (nx-hbloader)
+  - \`kaihen/lib/\`: the shared libraries of dynamically linked programs: \`libounce.so.1\`, \`libstdc++.so.6\`, Vulkan (\`libouncevk.so.1\`), OpenGL (\`libouncevk-gl.so.1\`), and \`libvulkan.so.1\`, \`libEGL.so.1\`, \`libGLESv2.so.2\` and \`libGL.so.1\` for programs that load those names. nx-hbloader looks for a program's libraries in the program's folder and then in \`sdmc:/kaihen/lib\`.
+  - \`switch/ounceshell.nro\`: OunceShell
+- \`ro/main\`, \`bootstrap.bin\`: the acquisition tool reads these itself; they do not go on the SD card.
 - \`licenses/\`: the licenses of everything above
 
 Built with \`docker build --build-arg RELEASE=1 --output out .\` at this tag, in ounce-devkit's image with $devkit from the [ounce] repository.
@@ -51,6 +60,7 @@ Built with \`docker build --build-arg RELEASE=1 --output out .\` at this tag, in
 - nx-hbloader: [ouncebrew/ounce-hbloader](https://github.com/ouncebrew/ounce-hbloader) at \`$(pin HBLOADER_COMMIT)\`.
 - nx-hbmenu: [ouncebrew/ounce-hbmenu](https://github.com/ouncebrew/ounce-hbmenu) at \`$(pin HBMENU_COMMIT)\`.
 - OunceShell (GPL-3.0-or-later): [kurumuz/ounceshell](https://github.com/kurumuz/ounceshell) at \`$(pin OUNCESHELL_COMMIT)\`, built with its \`switch2/Makefile\`. Its FTP server is [mtheall/ftpd](https://github.com/mtheall/ftpd) v2.3.1 (public domain), modified.
+- \`libstdc++.so.6\` (GPL-3.0-or-later with the GCC Runtime Library Exception): GCC's C++ library as devkitA64 builds it, linked as a shared library by libounce's package. Its source is devkitPro's [buildscripts](https://github.com/devkitPro/buildscripts) for the devkitA64 release of the build image.
 - $devkit: the packages of [ouncebrew/libounce](https://github.com/ouncebrew/libounce), [ouncebrew/ouncevk](https://github.com/ouncebrew/ouncevk) and this repository's releases of those versions.
 - The devkitPro portlibs linked into hbmenu and OunceShell, from devkitPro's packages: libconfig 1.7.2, freetype 2.13.3, harfbuzz 10.0.1, libjpeg-turbo 2.1.2, libpng 1.6.48, bzip2 1.0.8, zlib 1.3.1, physfs 3.2.0, SDL2 2.28.5, SDL2_ttf 2.22.0, SDL2_image 2.0.4, libwebp 1.0.2, libarchive 3.7.2, expat 2.2.5, lz4 1.9.3, zstd 1.5.7, liblzma 5.8.2, libvorbis 1.3.7, libogg 1.3.4, Oniguruma 6.9.2.
 

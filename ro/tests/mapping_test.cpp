@@ -35,6 +35,9 @@ u32 g_block_guard_once, g_block_trailing_once, g_guard_query_error_once, g_guard
 bool g_split_source;
 u64 g_fail_unmap_source;
 u64 g_unmapped_source[4];
+/// The number of one-page blocks in use at the start of the target's address
+/// space: a client that has many images mapped.
+u32 g_occupied_blocks;
 
 u64 localImage() {
     return reinterpret_cast<u64>(g_local_image);
@@ -58,6 +61,7 @@ void resetCounters() {
     g_reserved_extra = g_reserved_extra_size = 0;
     g_reserved_extra_type = 0;
     g_reserved_extra_process = TargetProcess;
+    g_occupied_blocks = 0;
     std::memset(g_unmapped_source, 0, sizeof(g_unmapped_source));
 }
 
@@ -108,8 +112,16 @@ Result svcQueryProcessMemory(MemoryInfo* info, u32* page, Handle process, u64 ad
     }
 
     assert(address >= Destination - 0x100000 && address < Destination + 0x300000);
-    info->addr = Destination - 0x100000;
-    info->size = 0x400000;
+    const u64 occupied_end = Destination - 0x100000 + u64{g_occupied_blocks} * 0x1000;
+    if (address < occupied_end) {
+        info->addr = address & ~u64{0xfff};
+        info->size = 0x1000;
+        info->type = MemType_CodeStatic;
+        info->perm = Perm_Rx;
+        return 0;
+    }
+    info->addr = occupied_end;
+    info->size = Destination + 0x300000 - occupied_end;
     const bool guard = address == g_mapped_destination - 0x4000 ||
                        address == g_mapped_destination + 0x4000;
     if (guard && g_map_calls >= 2) {
@@ -254,6 +266,14 @@ int main() {
     g_fail_map_result = KERNELRESULT(InvalidMemoryState);
     assert(roMapImage(TargetProcess, args, &record, &record, 1, &base) == 0);
     assert(g_map_calls == 3 && base == Destination + 0x200000);
+    assert(roUnmapImage(TargetProcess, &record) == 0);
+
+    // The search has no fixed number of blocks: a client with 300 blocks in
+    // use before the first free address gets the address after them.
+    resetCounters();
+    g_occupied_blocks = 300;
+    assert(roMapImage(TargetProcess, args, &record, &record, 1, &base) == 0);
+    assert(base == Destination + 0x200000 && g_map_calls == 2);
     assert(roUnmapImage(TargetProcess, &record) == 0);
 
     // Retries stop after 64 attempts.

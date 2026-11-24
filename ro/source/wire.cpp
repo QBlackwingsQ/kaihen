@@ -31,6 +31,7 @@ bool getCommandShape(u32 cmd_id, CommandShape* out) {
         return true;
     case RoCmd_GetHomebrewSession:
     case RoCmd_ReleaseJitCode:
+    case RoCmd_ReleaseNros:
         *out = {8, 0, 0};
         return true;
     case RoCmd_LoadNro:

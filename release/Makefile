@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: ISC
 #
 # Builds the kaiHEN release zip:
-#   bootstrap.bin, hbmenu.nro, ro/main, hen/main,
-#   game/main                    nx-hbloader
-#   programs/ounceshell.nro      OunceShell, the VitaShell port
+#   sdcard/                      copied to the SD card as it is:
+#     hbmenu.nro
+#     kaihen/bin/hen/main        kaiHEN
+#     kaihen/bin/game/main       nx-hbloader
+#     kaihen/lib/                the shared libraries of dynamically linked
+#                                programs
+#     switch/ounceshell.nro      OunceShell, the VitaShell port
+#   ro/main, bootstrap.bin       the host reads these during acquisition
 #   licenses/                    the licenses of everything above
 #
 # The Dockerfile runs this with RELEASE=1 and sets the sources and commits:
@@ -18,6 +23,17 @@ HBMENU := $(DEPS)/nx-hbmenu
 OUNCESHELL := $(DEPS)/ounceshell
 STAGE := $(DEPS)/zip
 LICENSES := $(STAGE)/licenses
+# The shared libraries that hbloader looks for in sdmc:/kaihen/lib when a
+# dynamically linked program does not bring its own: libounce's runtime
+# library and libstdc++ from libounce's package, and from OunceVK's the
+# Vulkan driver, the GL library, and the libraries with the names that code
+# written for Linux loads with dlopen. They are the packages' NROs, as the
+# devkit's image has them.
+OUNCEVK_SHARED := libouncevk.so.1 libouncevk-gl.so.1 libvulkan.so.1 \
+	libEGL.so.1 libGLESv2.so.2 libGL.so.1
+SHARED_LIBRARIES := $(DEVKITPRO)/libounce/lib/shared/nro/libounce.so.1 \
+	$(DEVKITPRO)/libounce/lib/shared/nro/libstdc++.so.6 \
+	$(addprefix $(DEVKITPRO)/portlibs/switch2/lib/shared/nro/,$(OUNCEVK_SHARED))
 # devkitPro's Switch portlibs that hbmenu and OunceShell link, that
 # ship a license file.
 PORTLIB_LICENSES := $(DEVKITPRO)/portlibs/switch/licenses
@@ -36,7 +52,9 @@ endef
 # Copies the licenses of kaiHEN, the programs, and the libraries linked into
 # them. The portlibs without a license file (physfs, harfbuzz, SDL 2, libwebp,
 # expat, lz4, liblzma, libvorbis, libogg, Oniguruma) have theirs in
-# release/licenses, from upstream at the installed versions.
+# release/licenses, from upstream at the installed versions. libstdc++.so.6
+# is GCC's library as a file of its own: its license and the GCC Runtime
+# Library Exception are there too.
 define copy_licenses
 	mkdir -p $(LICENSES)
 	cp LICENSE $(LICENSES)/kaiHEN-GPL-2.0.txt
@@ -73,16 +91,22 @@ $(OUNCESHELL)/build/switch2/ounceshell.nro:
 	$(call checkout,$(OUNCESHELL),$(OUNCESHELL_URL),$(OUNCESHELL_COMMIT))
 	$(MAKE) -C $(OUNCESHELL) -f switch2/Makefile
 
+# The zip has three parts:
+#   sdcard/        goes to the SD card as it is: the host copies it whole.
+#   ro/main, bootstrap.bin   the host reads these itself during acquisition.
+#   licenses/      the licenses of everything in the zip.
 $(RELEASE_ZIP): kaihen $(HBLOADER)/build/clean/main \
         $(HBMENU)/build/nro/nro/hbmenu.nro $(OUNCESHELL)/build/switch2/ounceshell.nro
 	rm -rf $(STAGE)
-	mkdir -p $(STAGE)/ro $(STAGE)/hen $(STAGE)/game $(STAGE)/programs
+	mkdir -p $(STAGE)/ro $(STAGE)/sdcard/kaihen/bin/hen $(STAGE)/sdcard/kaihen/bin/game \
+		$(STAGE)/sdcard/kaihen/lib $(STAGE)/sdcard/switch
 	cp bootstrap/build/bootstrap.bin $(STAGE)/bootstrap.bin
-	cp $(HBMENU)/build/nro/nro/hbmenu.nro $(STAGE)/hbmenu.nro
 	cp ro/build/main $(STAGE)/ro/main
-	cp hen/build/main $(STAGE)/hen/main
-	cp $(HBLOADER)/build/clean/main $(STAGE)/game/main
-	cp $(OUNCESHELL)/build/switch2/ounceshell.nro $(STAGE)/programs/
+	cp $(HBMENU)/build/nro/nro/hbmenu.nro $(STAGE)/sdcard/hbmenu.nro
+	cp hen/build/main $(STAGE)/sdcard/kaihen/bin/hen/main
+	cp $(HBLOADER)/build/clean/main $(STAGE)/sdcard/kaihen/bin/game/main
+	cp $(SHARED_LIBRARIES) $(STAGE)/sdcard/kaihen/lib/
+	cp $(OUNCESHELL)/build/switch2/ounceshell.nro $(STAGE)/sdcard/switch/
 	$(copy_licenses)
 	mkdir -p $(dir $(abspath $@))
 	rm -f $@

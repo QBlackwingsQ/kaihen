@@ -24,6 +24,7 @@ enum RoCmd : u32 {
     RoCmd_MapJitAlias = KaihenRoCommand_MapJitAlias,
     RoCmd_PublishJitAlias = KaihenRoCommand_PublishJitAlias,
     RoCmd_PublishJitRanges = KaihenRoCommand_PublishJitRanges,
+    RoCmd_ReleaseNros = KaihenRoCommand_ReleaseNros,
 };
 
 /// A decoded ldr:ro request.

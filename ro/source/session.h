@@ -8,7 +8,6 @@
 #include "wire.h"
 
 constexpr u32 RoMaxNrr = 8;
-constexpr u32 RoMaxNro = 8;
 constexpr u32 RoMaxJit = 512;
 
 /// What RO has mapped for a loaded image, in RoLoadedImage::mapped.
@@ -54,7 +53,11 @@ struct RoSession {
     Handle process_handle; ///< Copied by Initialize; owned.
     u64 nrr_source[RoMaxNrr];
     u64 nrr_size[RoMaxNrr];
-    RoLoadedImage nro[RoMaxNro];
+    /// The client's NROs: a program and each of its shared libraries is one.
+    /// The array grows as the client loads more, so their number has no
+    /// limit but RO's memory. A record with mapped == 0 is free. Owned.
+    RoLoadedImage* nro;
+    u32 nro_capacity;
     RoJitMapping jit[RoMaxJit];
 };
 
