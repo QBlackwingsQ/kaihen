@@ -46,7 +46,7 @@ kaiHEN-$version.zip layout:
   - \`hbmenu.nro\`
   - \`kaihen/bin/ro/main\` (RO, which the acquisition tool also reads itself), \`kaihen/bin/hen/main\` (kaiHEN) and \`kaihen/bin/game/main\` (nx-hbloader)
   - \`kaihen/lib/\`: the shared libraries of dynamically linked programs: \`libounce.so.1\`, \`libstdc++.so.6\`, Vulkan (\`libouncevk.so.1\`), OpenGL (\`libouncevk-gl.so.1\`), and \`libvulkan.so.1\`, \`libEGL.so.1\`, \`libGLESv2.so.2\` and \`libGL.so.1\` for programs that load those names. nx-hbloader looks for a program's libraries in the program's folder and then in \`sdmc:/kaihen/lib\`.
-  - \`switch/ounceshell.nro\`: OunceShell
+  - \`switch/ounceshell/ounceshell.nro\`: OunceShell, in the folder that holds its settings. Releases up to 20261127 had it at \`switch/ounceshell.nro\`; the acquisition tool deletes that file.
 - \`bootstrap.bin\`: the acquisition tool reads it itself; it does not go on the SD card.
 - \`licenses/\`: the licenses of everything above
 
