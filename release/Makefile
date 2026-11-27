@@ -9,7 +9,9 @@
 #     kaihen/bin/game/main       nx-hbloader
 #     kaihen/lib/                the shared libraries of dynamically linked
 #                                programs
-#     switch/ounceshell.nro      OunceShell, the VitaShell port
+#     switch/ounceshell/ounceshell.nro
+#                                OunceShell, the VitaShell port, in the folder
+#                                that holds its settings
 #   bootstrap.bin                the host reads it during acquisition
 #   licenses/                    the licenses of everything above
 #
@@ -103,14 +105,14 @@ $(RELEASE_ZIP): kaihen $(HBLOADER)/build/clean/main \
 	rm -rf $(STAGE)
 	mkdir -p $(STAGE)/sdcard/kaihen/bin/ro $(STAGE)/sdcard/kaihen/bin/hen \
 		$(STAGE)/sdcard/kaihen/bin/game \
-		$(STAGE)/sdcard/kaihen/lib $(STAGE)/sdcard/switch
+		$(STAGE)/sdcard/kaihen/lib $(STAGE)/sdcard/switch/ounceshell
 	cp bootstrap/build/bootstrap.bin $(STAGE)/bootstrap.bin
 	cp ro/build/main $(STAGE)/sdcard/kaihen/bin/ro/main
 	cp $(HBMENU)/build/nro/nro/hbmenu.nro $(STAGE)/sdcard/hbmenu.nro
 	cp hen/build/main $(STAGE)/sdcard/kaihen/bin/hen/main
 	cp $(HBLOADER)/build/clean/main $(STAGE)/sdcard/kaihen/bin/game/main
 	cp $(SHARED_LIBRARIES) $(STAGE)/sdcard/kaihen/lib/
-	cp $(OUNCESHELL)/build/switch2/ounceshell.nro $(STAGE)/sdcard/switch/
+	cp $(OUNCESHELL)/build/switch2/ounceshell.nro $(STAGE)/sdcard/switch/ounceshell/
 	$(copy_licenses)
 	mkdir -p $(dir $(abspath $@))
 	rm -f $@

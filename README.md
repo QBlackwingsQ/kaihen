@@ -68,7 +68,7 @@ writes the release, `out/kaiHEN.zip`. Its `sdcard/` folder is the SD card:
 nx-hbmenu (`sdcard/hbmenu.nro`), RO, kaiHEN and nx-hbloader
 (`sdcard/kaihen/bin/ro/main`, `sdcard/kaihen/bin/hen/main`,
 `sdcard/kaihen/bin/game/main`), OunceShell
-(`sdcard/switch/ounceshell.nro`, a file manager with an FTP server), and the
+(`sdcard/switch/ounceshell/ounceshell.nro`, a file manager with an FTP server), and the
 shared libraries of dynamically linked programs from the devkit's packages
 (`sdcard/kaihen/lib/`), all built at the commits that the Dockerfile names.
 The acquisition tool also reads RO from there during startup. It reads
