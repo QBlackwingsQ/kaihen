@@ -14,7 +14,7 @@ ARG RELEASE=0
 ARG HBLOADER_URL=https://github.com/ouncebrew/ounce-hbloader.git
 ARG HBLOADER_COMMIT=e34f4afae44fb308dd781a7bd619c3c0787a7a99
 ARG HBMENU_URL=https://github.com/ouncebrew/ounce-hbmenu.git
-ARG HBMENU_COMMIT=43845d247487dedaa902f53f7d24ed61a116e982
+ARG HBMENU_COMMIT=cb0696389bb10c668c37eabdfd455dde1d63ddaf
 ARG OUNCESHELL_URL=https://github.com/kurumuz/ounceshell.git
 ARG OUNCESHELL_COMMIT=b2655caf6f8e48084bde84f18c28f834358f8286
 COPY . /src

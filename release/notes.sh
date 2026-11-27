@@ -44,10 +44,10 @@ kaiHEN-$version.zip layout:
 
 - \`sdcard/\`: copy its contents to the SD card's root. The acquisition tool copies this folder for you.
   - \`hbmenu.nro\`
-  - \`kaihen/bin/hen/main\` (kaiHEN) and \`kaihen/bin/game/main\` (nx-hbloader)
+  - \`kaihen/bin/ro/main\` (RO, which the acquisition tool also reads itself), \`kaihen/bin/hen/main\` (kaiHEN) and \`kaihen/bin/game/main\` (nx-hbloader)
   - \`kaihen/lib/\`: the shared libraries of dynamically linked programs: \`libounce.so.1\`, \`libstdc++.so.6\`, Vulkan (\`libouncevk.so.1\`), OpenGL (\`libouncevk-gl.so.1\`), and \`libvulkan.so.1\`, \`libEGL.so.1\`, \`libGLESv2.so.2\` and \`libGL.so.1\` for programs that load those names. nx-hbloader looks for a program's libraries in the program's folder and then in \`sdmc:/kaihen/lib\`.
   - \`switch/ounceshell.nro\`: OunceShell
-- \`ro/main\`, \`bootstrap.bin\`: the acquisition tool reads these itself; they do not go on the SD card.
+- \`bootstrap.bin\`: the acquisition tool reads it itself; it does not go on the SD card.
 - \`licenses/\`: the licenses of everything above
 
 Built with \`docker build --build-arg RELEASE=1 --output out .\` at this tag, in ounce-devkit's image with $devkit from the [ounce] repository.
