@@ -3,12 +3,14 @@
 # Builds the kaiHEN release zip:
 #   sdcard/                      copied to the SD card as it is:
 #     hbmenu.nro
+#     kaihen/bin/ro/main         RO, which the host also reads during
+#                                acquisition
 #     kaihen/bin/hen/main        kaiHEN
 #     kaihen/bin/game/main       nx-hbloader
 #     kaihen/lib/                the shared libraries of dynamically linked
 #                                programs
 #     switch/ounceshell.nro      OunceShell, the VitaShell port
-#   ro/main, bootstrap.bin       the host reads these during acquisition
+#   bootstrap.bin                the host reads it during acquisition
 #   licenses/                    the licenses of everything above
 #
 # The Dockerfile runs this with RELEASE=1 and sets the sources and commits:
@@ -93,15 +95,17 @@ $(OUNCESHELL)/build/switch2/ounceshell.nro:
 
 # The zip has three parts:
 #   sdcard/        goes to the SD card as it is: the host copies it whole.
-#   ro/main, bootstrap.bin   the host reads these itself during acquisition.
+#                  The host also reads kaihen/bin/ro/main during acquisition.
+#   bootstrap.bin  the host reads it itself during acquisition.
 #   licenses/      the licenses of everything in the zip.
 $(RELEASE_ZIP): kaihen $(HBLOADER)/build/clean/main \
         $(HBMENU)/build/nro/nro/hbmenu.nro $(OUNCESHELL)/build/switch2/ounceshell.nro
 	rm -rf $(STAGE)
-	mkdir -p $(STAGE)/ro $(STAGE)/sdcard/kaihen/bin/hen $(STAGE)/sdcard/kaihen/bin/game \
+	mkdir -p $(STAGE)/sdcard/kaihen/bin/ro $(STAGE)/sdcard/kaihen/bin/hen \
+		$(STAGE)/sdcard/kaihen/bin/game \
 		$(STAGE)/sdcard/kaihen/lib $(STAGE)/sdcard/switch
 	cp bootstrap/build/bootstrap.bin $(STAGE)/bootstrap.bin
-	cp ro/build/main $(STAGE)/ro/main
+	cp ro/build/main $(STAGE)/sdcard/kaihen/bin/ro/main
 	cp $(HBMENU)/build/nro/nro/hbmenu.nro $(STAGE)/sdcard/hbmenu.nro
 	cp hen/build/main $(STAGE)/sdcard/kaihen/bin/hen/main
 	cp $(HBLOADER)/build/clean/main $(STAGE)/sdcard/kaihen/bin/game/main
